@@ -133,6 +133,19 @@ inline bool selection_direction_is_cardinal(selection_direction_t dir)
 #define VOMIT_ABORT(err, str) do { int code = (err); fprintf(stderr, "%s failed on line %d in file %s: %d (%s)\n", str, __LINE__, __FILE__, code, strerror(code)); abort(); } while(0)
 
 /** Exits without invoking destructors (via _exit), useful for code after fork. */
+/*
+ * noreturn attribute 는 compiler 로 하여금 이 함수가
+ * 절대 리턴하지 않는다는 것을 알려주어 최적화를 잘 할 수 있도록 해준다.
+ *
+ * http://stackoverflow.com/questions/10538291/what-is-the-point-of-the-noreturn-attribute
+ *
+ * f() 함수에 noreturn attribute 를 사용하고, f(); g(); 와 같은
+ * 코드가 있었다면 컴파일러는 g() 함수가 절대 호출되지 않을 것이라는
+ * 경고를 컴파일 단계에서부터 보여줄 수 있는 것이다.
+ *
+ * 주의 : void 는 noreturn 이 아니다.
+ *        return value 가 없을 뿐이고 return 은 하는 것이다.
+ */
 void exit_without_destructors(int code) __attribute__((noreturn));
 
 /**

@@ -252,12 +252,20 @@ wcstring str2wcstring(const std::string &in)
     return str2wcs_internal(in.data(), in.size());
 }
 
+/*
+ * wild character 를 일반 byte string 으로 변환 
+ */
 char *wcs2str(const wchar_t *in)
 {
     if (! in)
         return NULL;
     size_t desired_size = MAX_UTF8_BYTES*wcslen(in)+1;
     char local_buff[512];
+
+    /*
+     * local_buff 를 사용할 수 있는 크기일 때만
+     * local_buff 를 사용하고, 이외에는 heap 사용.
+     */
     if (desired_size <= sizeof local_buff / sizeof *local_buff)
     {
         // convert into local buff, then use strdup() so we don't waste malloc'd space
@@ -360,10 +368,17 @@ static char *wcs2str_internal(const wchar_t *in, char *out)
         else if ((in[in_pos] >= ENCODE_DIRECT_BASE) &&
                  (in[in_pos] < ENCODE_DIRECT_BASE+256))
         {
+            /*
+             * in 에 담긴 것이 wide character 인 경우 conversion
+             */
             out[out_pos++] = in[in_pos]- ENCODE_DIRECT_BASE;
         }
         else
         {
+            /*
+             * in 에 담긴 것이 wide character 가 아닌 경우는
+             * 그냥 그대로 multiple byte 로 처리 
+             */
             res = wcrtomb(&out[out_pos], in[in_pos], &state);
 
             if (res == (size_t)(-1))
