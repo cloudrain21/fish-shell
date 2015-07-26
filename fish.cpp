@@ -140,6 +140,10 @@ static std::string get_executable_path(const char *argv0)
 }
 
 
+/*
+ * 실행 path 로 각 config path 들을 유추해보고,
+ * 이름으로 유추할 수 없을 때는 
+ */
 static struct config_paths_t determine_config_directory_paths(const char *argv0)
 {
     struct config_paths_t paths;
@@ -186,8 +190,17 @@ static struct config_paths_t determine_config_directory_paths(const char *argv0)
                  Check it!
             */
             const char *suffix = "/bin/fish";
+            /*
+             * exec_path 가 suffix 로 끝나면 config path 를 
+             * 이름만으로 유추해서 설정 가능 
+             */
             if (has_suffix(exec_path, suffix, false))
             {
+                /*
+                 * config path 는 wcstring 으로 이루어져있고,
+                 * 그 base path 는 /usr/local 과 같이 위의
+                 * exec_path 에서 추출한 것이다.
+                 */
                 wcstring base_path = str2wcstring(exec_path);
                 base_path.resize(base_path.size() - strlen(suffix));
 
@@ -211,6 +224,10 @@ static struct config_paths_t determine_config_directory_paths(const char *argv0)
         }
     }
 
+    /*
+     * 이름에서 유추할 수 없는 경우 Makefile 에서 미리 결정된
+     * path 를 사용한다.
+     */
     if (! done)
     {
         /* Fall back to what got compiled in. */
@@ -498,6 +515,9 @@ int main(int argc, char **argv)
     set_main_thread();
     setup_fork_guards();
 
+    /*
+     * Locale 초기화 
+     */
     wsetlocale(LC_ALL, L"");
     is_interactive_session=1;
     program_name=L"fish";
@@ -525,10 +545,25 @@ int main(int argc, char **argv)
 
     const struct config_paths_t paths = determine_config_directory_paths(argv[0]);
 
+    /*
+     * 프로세스 초기화 (signal handler setting)
+     */
     proc_init();
+
+    /*
+     * do nothing
+     */
     event_init();
     wutil_init();
+
+    /*
+     * built in function 의 이름들을 string_table 에 넣어둠.
+     */
     builtin_init();
+
+    /*
+     * mutex 초기화 
+     */
     function_init();
     env_init(&paths);
     reader_init();

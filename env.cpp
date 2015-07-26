@@ -420,6 +420,9 @@ wcstring env_get_pwd_slash(void)
 /* Here is the whitelist of variables that we colon-delimit, both incoming from the environment and outgoing back to it. This is deliberately very short - we don't want to add language-specific values like CLASSPATH. */
 static bool variable_is_colon_delimited_array(const wcstring &str)
 {
+    /*
+     * str 이 아래 3 개 중의 하나인지 검사 
+     */
     return contains(str, L"PATH", L"MANPATH", L"CDPATH");
 }
 
@@ -482,6 +485,12 @@ void env_init(const struct config_paths_t *paths /* or NULL */)
             wcstring key = key_and_val.substr(0, eql);
             if (is_read_only(key) || is_electric(key)) continue;
             wcstring val = key_and_val.substr(eql + 1);
+
+            /*
+             * 환경변수 key 가 : 로 여러개를 설정할 수 있는 경우
+             * (PATH, MANPATH 등)
+             * colon(:)을 ARRAY_SEP 로 교체 
+             */
             if (variable_is_colon_delimited_array(key))
             {
                 std::replace(val.begin(), val.end(), L':', ARRAY_SEP);

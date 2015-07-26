@@ -562,6 +562,9 @@ wcstring wsetlocale(int category, const wchar_t *locale)
     /*
       Use ellipsis if on known unicode system, otherwise use $
     */
+    /*
+     * NULL 로 주면 current 값을 읽어서 ctype 으로 리턴 
+     */
     char *ctype = setlocale(LC_CTYPE, NULL);
     bool unicode = (strstr(ctype, ".UTF") || strstr(ctype, ".utf"));
 
@@ -2138,6 +2141,10 @@ void append_path_component(wcstring &path, const wcstring &component)
     }
 }
 
+/*
+ * inline 으로 하면 여기 저기 중복코드들이 인입되므로
+ * 그냥 noinline 함수로 두는 것이 코드량을 줄인다.
+ */
 extern "C" {
     __attribute__((noinline)) void debug_thread_error(void)
     {
