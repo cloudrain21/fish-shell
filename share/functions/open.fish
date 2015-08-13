@@ -1,4 +1,3 @@
-
 #
 # This allows us to use 'open FILENAME' to open a given file in the default
 # application for the file.
@@ -23,8 +22,7 @@ if not test (uname) = Darwin
 				xdg-open $i
 			end
 		else
-			mimedb -l -- $argv
+			echo (_ 'No open utility found. Try installing "xdg-open" or "xdg-utils".')
 		end
 	end
 end
-
